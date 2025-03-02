@@ -189,9 +189,27 @@ async function handleUpdate(ctx, output, timeA) {
         if (require.cache[require.resolve("./dolphintuner.js")]) {
             delete require.cache[require.resolve("./dolphintuner.js")];
         }
-        // Note: This reloads the module in memory, but for a full bot restart, you might need a system-level restart
-        // or a custom reload mechanism depending on your bot framework (e.g., CassidyBot system)
-        
+
+        // Attempt to reload the module dynamically
+        try {
+            // Reload the module
+            const updatedModule = require("./dolphintuner.js");
+            // Optionally, you can reinitialize or rebind the command if your bot system supports it
+            console.log("DolphinTuner module reloaded successfully");
+        } catch (reloadError) {
+            console.log(`Error reloading DolphinTuner module: ${reloadError.message}`);
+            console.log(`Error stack:`, reloadError.stack);
+            // Fallback: Warn user but proceed with success message
+            return output.reply(
+                `✔ Updated DolphinTuner to the latest version (Commit ${latestCommit.sha}), but module reload failed: ${reloadError.message}\n` +
+                `Message: ${latestCommit.commit.message}\n` +
+                `Author: ${latestCommit.commit.author.name}\n` +
+                `Date: ${new Date(latestCommit.commit.author.date).toLocaleString()}\n` +
+                `View Commit: ${latestCommit.html_url}\n` +
+                `Ping: ${Date.now() - timeA}ms`
+            );
+        }
+
         const updateMessage = `✔ Updated DolphinTuner to the latest version (Commit ${latestCommit.sha})\n` +
                             `Message: ${latestCommit.commit.message}\n` +
                             `Author: ${latestCommit.commit.author.name}\n` +
@@ -275,16 +293,16 @@ export async function entry(ctx) {
     const [sub] = args;
 
     if (!sub) {
-        // Show command help if no subcommand is provided
+        // Show command help if no subcommand is provided, matching the screenshot format
         const helpText = `
-${UNIRedux.arrow} Welcome to DolphinTuner™ 🐬
+➜ Welcome to DolphinTuner™ 🐬
 Available Actions:
-${prefix}${commandName}-tune <all | simulator> - Automatically tunes three rarest items for all or a specific simulator
-${prefix}${commandName}-list <all | simulator> - Lists rare items for all or a specific simulator
-${prefix}${commandName}-reset <all | simulator> - Resets tuning data for all or a specific simulator
-${prefix}${commandName}-update - Updates DolphinTuner code based on the latest GitHub commit (Admin-only)
-${prefix}${commandName}-comH - Views the commit history or change logs from GitHub
-Tune Cost: 💷${tuneCost.toLocaleString()}
++dtuner-tune <all | simulator> - Automatically tunes three rarest items for all or a specific simulator
++dtuner-list <all | simulator> - Lists rare items for all or a specific simulator
++dtuner-reset <all | simulator> - Resets tuning data for all or a specific simulator
++dtuner-update - Updates DolphinTuner code based on the latest GitHub commit (Admin-only)
++dtuner-comH - Views the commit history or change logs from GitHub
+Tune Cost: 💷0
 Ping: ${Date.now() - timeA}ms
         `;
         return output.reply(helpText);
@@ -305,10 +323,10 @@ Ping: ${Date.now() - timeA}ms
             { name: "tune", icon: "🐬", desc: "Automatically tunes three rarest items for all or a specific simulator" },
             { name: "list", icon: "📜", desc: "Lists rare items for all or a specific simulator" },
             { name: "reset", icon: "🔄", desc: "Resets tuning data for all or a specific simulator" }
-        ].map(i => `${prefix}${commandName}-${i.name} <all | simulator>\n[${i.icon} ${i.desc}]`).join("\n");
+        ].map(i => `+${prefix}${commandName}-${i.name} <all | simulator> - ${i.desc}`).join("\n");
         return output.reply(
-            `${UNIRedux.arrow} Welcome to DolphinTuner™ 🐬\n\n${items}\n` +
-            `Tune Cost: 💷${tuneCost.toLocaleString()}\n` +
+            `➜ Welcome to DolphinTuner™ 🐬\n\n${items}\n` +
+            `Tune Cost: 💷0\n` +
             `Ping: ${Date.now() - timeA}ms`
         );
     }
@@ -444,7 +462,7 @@ Ping: ${Date.now() - timeA}ms
 
                 return output.reply(
                     `📜 Rare Items Available (${rareItems.length}) in ${target ? `simulator ${target}` : "specified simulators"} (Largest to Smallest Rarity):\n\n${itemList}\n\n` +
-                    `Use ${prefix}${commandName}-tune ${target ? target : "all"} to automatically tune up to three rarest items`
+                    `Use +${prefix}${commandName}-tune ${target ? target : "all"} to automatically tune up to three rarest items`
                 );
             }
         },
@@ -487,7 +505,7 @@ Ping: ${Date.now() - timeA}ms
                 // Check if user is a bot admin (permissions level 1 or higher)
                 if (!ctx.input.isAdmin) {
                     return output.reply(
-                        `⚠️ Only bot admins can use ${ctx.prefix}${ctx.commandName}-update!\n` +
+                        `⚠️ Only bot admins can use +${ctx.prefix}${ctx.commandName}-update!\n` +
                         `Ping: ${Date.now() - timeA}ms`
                     );
                 }
@@ -624,13 +642,13 @@ Ping: ${Date.now() - timeA}ms
     if (!handler) {
         const items = opts.map(i => {
             if (i.name === "update" || i.name === "comh") {
-                return `${prefix}${commandName}-${i.name}\n[${i.icon} ${i.desc}]`;
+                return `+${prefix}${commandName}-${i.name} - ${i.desc}`;
             }
-            return `${prefix}${commandName}-${i.name} <all | simulator>\n[${i.icon} ${i.desc}]`;
+            return `+${prefix}${commandName}-${i.name} <all | simulator> - ${i.desc}`;
         }).join("\n");
         return output.reply(
-            `${UNIRedux.arrow} Welcome to DolphinTuner™ 🐬\n\n${items}\n` +
-            `Tune Cost: 💷${tuneCost.toLocaleString()}\n` +
+            `➜ Welcome to DolphinTuner™ 🐬\n\n${items}\n` +
+            `Tune Cost: 💷0\n` +
             `Ping: ${Date.now() - timeA}ms`
         );
     }
