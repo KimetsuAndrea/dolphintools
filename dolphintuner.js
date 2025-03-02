@@ -6,7 +6,7 @@ import { ReduxCMDHome } from "../modules/reduxCMDHome.js"; // Import ReduxCMDHom
 export const meta = {
     name: "dolphintuner",
     description: "Manages tuning, listing, resetting, updating (admin-only), and viewing commit history for game simulators.",
-    author: "Grok 3 || xAI",
+    author: "Grok 3 || xAI || Liane || Symer",
     version: "1.0.0",
     usage: "{prefix}dtuner <action>",
     category: "Utilities",
