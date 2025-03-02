@@ -154,8 +154,8 @@ async function handleUpdate(ctx, output, timeA) {
     }
 
     try {
-        const repoOwner = "your-username"; // Replace with your GitHub username
-        const repoName = "dolphin-tuner"; // Replace with your repository name
+        const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
+        const repoName = "dolphintools"; // Replace with your repository name
         const filePath = "dolphintuner.js"; // Path to the file in the repo
         const githubToken = process.env.GITHUB_TOKEN; // Use environment variable for GitHub PAT (optional for public repos)
 
@@ -219,8 +219,8 @@ async function handleUpdate(ctx, output, timeA) {
  */
 async function handleCommitHistory(ctx, output, timeA) {
     try {
-        const repoOwner = "your-username"; // Replace with your GitHub username
-        const repoName = "dolphin-tuner"; // Replace with your repository name
+        const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
+        const repoName = "dolphintools"; // Replace with your repository name
         const githubToken = process.env.GITHUB_TOKEN; // Use environment variable for GitHub PAT (optional for public repos)
 
         // Configure GitHub API base URL
@@ -573,8 +573,8 @@ Ping: ${Date.now() - timeA}ms
             desc: "Views the commit history or change logs from GitHub",
             async callback() {
                 try {
-                    const repoOwner = "your-username"; // Replace with your GitHub username
-                    const repoName = "dolphin-tuner"; // Replace with your repository name
+                    const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
+                    const repoName = "dolphintools"; // Replace with your repository name
                     const githubToken = process.env.GITHUB_TOKEN; // Use environment variable for GitHub PAT (optional for public repos)
 
                     // Configure GitHub API base URL
