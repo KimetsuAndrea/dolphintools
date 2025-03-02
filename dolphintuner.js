@@ -493,8 +493,8 @@ Ping: ${Date.now() - timeA}ms
                 }
 
                 try {
-                    const repoOwner = "your-username"; // Replace with your GitHub username
-                    const repoName = "dolphin-tuner"; // Replace with your repository name
+                    const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
+                    const repoName = "dolphintools"; // Replace with your repository name
                     const filePath = "dolphintuner.js"; // Path to the file in the repo
                     const githubToken = process.env.GITHUB_TOKEN; // Use environment variable for GitHub PAT (optional for public repos)
 
