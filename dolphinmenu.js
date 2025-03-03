@@ -20,6 +20,12 @@ export const meta = {
     shopPrice: 0,
 };
 
+export const style = {
+  title: "Dolphin Menu 🐬",
+  contentFont: "fancy",
+  titleFont: "bold",
+};
+
 // GitHub repository details
 const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
 const repoName = "dolphintools"; // Replace with your repository name
