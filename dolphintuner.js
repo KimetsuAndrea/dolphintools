@@ -13,10 +13,20 @@ export class style {
     content: null,
   };
 }
+const closeTexts = [
+    "The dolphins are sleeping now! Come back later when they're ready to play! Opens Only 5:30pm to 6pm! ",
+    "Shop's closed! The dolphins swam off for a lunch break! Opens Only 5:30pm to 6pm!",
+    "Sorry, friend! Our fins are tied up until later today! Opens Only 5:30pm to 6pm!",
+    "The tide's out! Check back when the dolphins ride the waves again! Opens Only 5:30pm to 6pm!",
+    "Dolphin HQ is napping! Return when the sun's higher in the sky! Opens Only 5:30pm to 6pm!",
+    "We're on a fish-finding mission! Back soon—swim by later! Opens Only 5:30pm to 6pm!",
+    "Closed for a splash break! Catch us when the water’s warm again! Opens Only 5:30pm to 6pm!",
+    "The dolphins are practicing their flips—see you when the show’s ready! Opens Only 5:30pm to 6pm!"
+];
 export const meta = {
     name: "dolphintuner",
     description: "Manages tuning, listing, resetting, updating (admin-only), and viewing commit history for game simulators.",
-    author: "Grok 3 || xAI || Liane || Nica || MrkimstersDev",
+    author: "Grok 3 || xAI || Liane || Nica || Symer",
     version: "1.0.0",
     usage: "{prefix}dtuner <action>",
     category: "Utilities",
@@ -28,19 +38,6 @@ export const meta = {
     icon: "🐬",
     shopPrice: 0, // As specified
 };
-
-const closeTexts = [
-    "The dolphins are sleeping now! Come back later when they're ready to play! Opens Only 5:30pm to 6pm! ",
-    "Shop's closed! The dolphins swam off for a lunch break! Opens Only 5:30pm to 6pm!",
-    "Sorry, friend! Our fins are tied up until later today! Opens Only 5:30pm to 6pm!",
-    "The tide's out! Check back when the dolphins ride the waves again! Opens Only 5:30pm to 6pm!",
-    "Dolphin HQ is napping! Return when the sun's higher in the sky! Opens Only 5:30pm to 6pm!",
-    "We're on a fish-finding mission! Back soon—swim by later! Opens Only 5:30pm to 6pm!",
-    "Closed for a splash break! Catch us when the water’s warm again! Opens Only 5:30pm to 6pm!",
-    "The dolphins are practicing their flips—see you when the show’s ready! Opens Only 5:30pm to 6pm!"
-];
-
-const defaultSimulatorCommands = ["plantita", "resto", "harvest", "beekeep", "chop", "cook", "garden", "brew", "farm", "minecraft", "trawl", "dig", "treasure", "explorer", "deepseadiver", "wizardsforge"];
 
 /**
  * Helper function to format duration
@@ -358,11 +355,11 @@ function levenshteinDistance(a, b) {
 }
 
 export async function entry(ctx) {
-    const { input, output, GameSimulator, args, money, commands, prefix, commandName, isTimeAvailable, userData } = ctx;
+    const { input, output, GameSimulator, args, money, commands, prefix, commandName, isTimeAvailable } = ctx;
 
-    // Time availabilitisTimeAvailable to 6:00 PM)
-    const a = (17 * 60 + 30) * 60 * 1000; // 5:30 PM in milliseconds
-    const b = 18 * 60 * 60 * 1000; // 6:00 PM in milliseconds
+   // Time availability check (5:30 PM to 7:00 PM)
+const a = (17 * 60 + 30) * 60 * 1000; // 5:30 PM in milliseconds
+const b = 19 * 60 * 60 * 1000; // 7:00 PM in milliseconds
     let isAvailable = isTimeAvailable(a, b);
 
     if (!isAvailable) {
@@ -370,7 +367,12 @@ export async function entry(ctx) {
             closeTexts[Math.floor(Math.random() * closeTexts.length)]
         }\n\n**Try again later!**`);
     }
-    
+    const userData = await money.get(input.senderID);
+    const tuneCost = 0; // As specified, cost is 0
+
+    // Define the list of default simulator commands
+    const defaultSimulatorCommands = ["plantita", "resto", "harvest", "beekeep", "chop", "cook", "garden", "brew", "farm", "minecraft", "trawl", "dig", "treasure", "explorer", "deepseadiver", "wizardsforge"]; // Default list for tuning actions
+
     const home = new ReduxCMDHome(
         {
             isHypen: true, // Enable hyphen-based subcommands (e.g., -tune, -list)
@@ -584,6 +586,90 @@ export async function entry(ctx) {
                     return output.reply(
                         `✔ Reset ${totalResetItems} tuned items in ${target === "all" ? "specified simulators" : `simulator ${target}`}!`
                     );
+                }
+            },
+            {
+                key: "update",
+                description: "Updates DolphinTuner code based on the latest GitHub commit (Admin-only)",
+                aliases: ["-update"], // Add hyphen alias for consistency
+                async handler() {
+                    // Check if user is a bot admin (permissions level 1 or higher)
+                    if (!ctx.input.isAdmin) {
+                        return output.reply(
+                            `⚠️ Only bot admins can use ${ctx.prefix}${ctx.commandName}-update!`
+                        );
+                    }
+
+                    try {
+                        const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
+                        const repoName = "dolphintools"; // Replace with your repository name
+                        const filePath = "dolphintuner.js"; // Path to the file in the repo
+                        const githubToken = process.env.GITHUB_TOKEN; // Use environment variable for GitHub PAT (optional for public repos)
+
+                        // Configure GitHub API base URL
+                        const githubApi = axios.create({
+                            baseURL: "https://api.github.com",
+                            headers: {
+                                "Accept": "application/vnd.github.v3+json",
+                                "Authorization": githubToken ? `token ${githubToken}` : "", // Add token if private repo or rate limits
+                            },
+                        });
+
+                        // Fetch the latest commit for the repository
+                        const commitsResponse = await githubApi.get(`/repos/${repoOwner}/${repoName}/commits?path=${filePath}&per_page=1`);
+                        const latestCommit = commitsResponse.data[0];
+
+                        if (!latestCommit) {
+                            throw new Error("No commits found for dolphintuner.js");
+                        }
+
+                        // Fetch the content of the latest commit for dolphintuner.js
+                        const contentResponse = await githubApi.get(`/repos/${repoOwner}/${repoName}/contents/${filePath}?ref=${latestCommit.sha}`);
+                        const fileContent = Buffer.from(contentResponse.data.content, "base64").toString("utf8");
+
+                        // 1. Write the file to disk
+                        fs.writeFileSync("./dolphintuner.js", fileContent, "utf8");
+                        console.log(`Successfully wrote updated dolphintuner.js to disk`);
+
+                        // 2. Reload or restart the bot/module to apply the update
+                        // Clear the require cache for dolphintuner.js to reload the module
+                        if (require.cache[require.resolve("./dolphintuner.js")]) {
+                            delete require.cache[require.resolve("./dolphintuner.js")];
+                        }
+
+                        // Attempt to reload the module dynamically
+                        try {
+                            // Reload the module
+                            const updatedModule = require("./dolphintuner.js");
+                            // Optionally, you can reinitialize or rebind the command if your bot system supports it
+                            console.log("DolphinTuner module reloaded successfully");
+                        } catch (reloadError) {
+                            console.log(`Error reloading DolphinTuner module: ${reloadError.message}`);
+                            console.log(`Error stack:`, reloadError.stack);
+                            // Fallback: Warn user but proceed with success message
+                            return output.reply(
+                                `✔ Updated DolphinTuner to the latest version (Commit ${latestCommit.sha}), but module reload failed: ${reloadError.message}\n` +
+                                `Message: ${latestCommit.commit.message}\n` +
+                                `Author: ${latestCommit.commit.author.name}\n` +
+                                `Date: ${new Date(latestCommit.commit.author.date).toLocaleString()}\n` +
+                                `View Commit: ${latestCommit.html_url}`
+                            );
+                        }
+
+                        const updateMessage = `✔ Updated DolphinTuner to the latest version (Commit ${latestCommit.sha})\n` +
+                                            `Message: ${latestCommit.commit.message}\n` +
+                                            `Author: ${latestCommit.commit.author.name}\n` +
+                                            `Date: ${new Date(latestCommit.commit.author.date).toLocaleString()}\n` +
+                                            `View Commit: ${latestCommit.html_url}`;
+
+                        return output.reply(updateMessage);
+                    } catch (error) {
+                        console.log(`Error updating DolphinTuner: ${error.message}`);
+                        console.log(`Error stack:`, error.stack);
+                        return output.reply(
+                            `⚠️ Failed to update DolphinTuner: ${error.message}`
+                        );
+                    }
                 }
             },
             {
