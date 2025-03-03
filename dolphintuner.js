@@ -26,7 +26,7 @@ const closeTexts = [
 export const meta = {
     name: "dolphintuner",
     description: "Manages tuning, listing, resetting, updating (admin-only), and viewing commit history for game simulators.",
-    author: "Grok 3 || xAI || Liane || Nica || Symer",
+    author: "Grok 3 || xAI || Liane || Nica || MrkimstersDev",
     version: "1.0.0",
     usage: "{prefix}dtuner <action>",
     category: "Utilities",
@@ -371,7 +371,7 @@ const b = 19 * 60 * 60 * 1000; // 7:00 PM in milliseconds
     const tuneCost = 0; // As specified, cost is 0
 
     // Define the list of default simulator commands
-    const defaultSimulatorCommands = ["plantita", "resto", "harvest", "beekeep", "chop", "cook", "garden", "brew", "farm", "minecraft", "trawl", "dig", "treasure", "explorer", "deepseadiver", "wizardsforge"]; // Default list for tuning actions
+    const defaultSimulatorCommands = ["plantita", "resto", "harvest", "beekeep", "chop", "cook", "echowar", "garden", "brew", "farm", "forge", "minecraft", "trawl", "dig", "hunt", "superwarp", "treasure", "explorer", "deepseadiver", "wizardsforge", "hsr", "wizardsforge"]; // Default list for tuning actions
 
     const home = new ReduxCMDHome(
         {
