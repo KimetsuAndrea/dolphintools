@@ -7,7 +7,7 @@ import { ReduxCMDHome } from "../modules/reduxCMDHome.js"; // Adjust path as nee
 export const meta = {
  name: "dolphinmenu",
  description: "Manages Dolphin commands: install, update, and list available commands.",
- author: "Grok 3 || xAI || Liane || Nica || MrkimstersDev",
+ author: "MrkimstersDev",
  version: "1.0.0",
  usage: "{prefix}dolphinmenu <option> [file]",
  category: "Utilities",
