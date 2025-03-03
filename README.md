@@ -131,7 +131,7 @@ We welcome contributions to Dolphin Tools! To get started:
    - Ensure code follows the dolphin theme (\`🐬\`) and Cassidy Bot conventions.
 
 4. **Contact**:
-   Reach out to the maintainers (e.g., **Liane Cagara**, **Symer [ MrkimstersDev ]**, **Delfin**, ) via Cassidy Bot’s community if needed.
+   Reach out to the maintainers (e.g., **Liane Cagara**, **Symer**, **Delfin**, ) via Cassidy Bot’s community if needed.
 
 ---
 
