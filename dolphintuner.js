@@ -16,7 +16,7 @@ export class style {
 export const meta = {
     name: "dolphintuner",
     description: "Manages tuning, listing, resetting, updating (admin-only), and viewing commit history for game simulators.",
-    author: "Grok 3 || xAI || Liane || Nica || Symer",
+    author: "Grok 3 || xAI || Liane || Nica || MrkimstersDev",
     version: "1.0.0",
     usage: "{prefix}dtuner <action>",
     category: "Utilities",
