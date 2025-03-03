@@ -358,9 +358,9 @@ function levenshteinDistance(a, b) {
 }
 
 export async function entry(ctx) {
-    const { input, output, GameSimulator, args, money, commands, prefix, commandName, isTimeAvailable } = ctx;
+    const { input, output, GameSimulator, args, money, commands, prefix, commandName, isTimeAvailable, userData } = ctx;
 
-    // Time availability check (5:30 PM to 6:00 PM)
+    // Time availabilitisTimeAvailable to 6:00 PM)
     const a = (17 * 60 + 30) * 60 * 1000; // 5:30 PM in milliseconds
     const b = 18 * 60 * 60 * 1000; // 6:00 PM in milliseconds
     let isAvailable = isTimeAvailable(a, b);
