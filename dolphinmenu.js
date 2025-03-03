@@ -47,8 +47,9 @@ async function fetchAndSaveCommand(fileName, githubApi, action = "install") {
         const localFilePath = join(commandDir, fileName); // Local CommandFiles/commands/
         const response = await githubApi.get(`/repos/${repoOwner}/${repoName}/contents/${repoFilePath}`);
         const fileContent = Buffer.from(response.data.content, "base64").toString("utf8");
-        
-        await ensureDirectory(dirPath);
+
+        // **Fixed: Use `commandDir` instead of `dirPath`**
+        await ensureDirectory(commandDir);
         await writeFile(localFilePath, fileContent, "utf8");
         console.log(`Successfully ${action}ed ${fileName} to ${localFilePath}`);
         return { success: true, sha: response.data.sha };
