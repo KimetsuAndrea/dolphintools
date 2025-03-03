@@ -2,11 +2,21 @@ import { UNIRedux } from "../modules/unisym.js";
 import axios from "axios"; // Import axios for GitHub API calls
 const fs = require("fs"); // Import fs for file operations
 import { ReduxCMDHome } from "../modules/reduxCMDHome.js"; // Import ReduxCMDHome for subcommand handling
-
+export class style {
+  title = {
+    text_font: "bold",
+    content: "DolphinToolKit 🐬",
+    line_bottom: "default",
+  };
+  content = {
+    text_font: "none",
+    content: null,
+  };
+}
 export const meta = {
     name: "dolphintuner",
     description: "Manages tuning, listing, resetting, updating (admin-only), and viewing commit history for game simulators.",
-    author: "Grok 3 || xAI || Liane || Symer",
+    author: "Grok 3 || xAI || Liane || Nica || Symer",
     version: "1.0.0",
     usage: "{prefix}dtuner <action>",
     category: "Utilities",
@@ -18,6 +28,17 @@ export const meta = {
     icon: "🐬",
     shopPrice: 0, // As specified
 };
+
+const closeTexts = [
+    "The dolphins are sleeping now! Come back later when they're ready to play! Opens Only 5:30pm to 6pm! ",
+    "Shop's closed! The dolphins swam off for a lunch break! Opens Only 5:30pm to 6pm!",
+    "Sorry, friend! Our fins are tied up until later today! Opens Only 5:30pm to 6pm!",
+    "The tide's out! Check back when the dolphins ride the waves again! Opens Only 5:30pm to 6pm!",
+    "Dolphin HQ is napping! Return when the sun's higher in the sky! Opens Only 5:30pm to 6pm!",
+    "We're on a fish-finding mission! Back soon—swim by later! Opens Only 5:30pm to 6pm!",
+    "Closed for a splash break! Catch us when the water’s warm again! Opens Only 5:30pm to 6pm!",
+    "The dolphins are practicing their flips—see you when the show’s ready! Opens Only 5:30pm to 6pm!"
+];
 
 /**
  * Helper function to format duration
@@ -139,18 +160,16 @@ async function initializeSimulators(ctx, simulatorCommands) {
  * Handle the update command (restricted to bot admins)
  * @param {Object} ctx - Context object
  * @param {Object} output - Output object for replying
- * @param {number} timeA - Start time for ping calculation
  * @returns {Promise<void>}
  */
-async function handleUpdate(ctx, output, timeA) {
+async function handleUpdate(ctx, output) {
     const { input, money } = ctx;
     const userData = await money.get(input.senderID) || {};
 
     // Check if user is a bot admin (permissions level 1 or higher)
     if (!input.isAdmin) {
         return output.reply(
-            `⚠️ Only bot admins can use +${ctx.prefix}${ctx.commandName}-update!\n` +
-            `Ping: ${Date.now() - timeA}ms`
+            `⚠️ Only bot admins can use +${ctx.prefix}${ctx.commandName}-update!`
         );
     }
 
@@ -206,8 +225,7 @@ async function handleUpdate(ctx, output, timeA) {
                 `Message: ${latestCommit.commit.message}\n` +
                 `Author: ${latestCommit.commit.author.name}\n` +
                 `Date: ${new Date(latestCommit.commit.author.date).toLocaleString()}\n` +
-                `View Commit: ${latestCommit.html_url}\n` +
-                `Ping: ${Date.now() - timeA}ms`
+                `View Commit: ${latestCommit.html_url}`
             );
         }
 
@@ -215,16 +233,14 @@ async function handleUpdate(ctx, output, timeA) {
                             `Message: ${latestCommit.commit.message}\n` +
                             `Author: ${latestCommit.commit.author.name}\n` +
                             `Date: ${new Date(latestCommit.commit.author.date).toLocaleString()}\n` +
-                            `View Commit: ${latestCommit.html_url}\n` +
-                            `Ping: ${Date.now() - timeA}ms`;
+                            `View Commit: ${latestCommit.html_url}`;
 
         return output.reply(updateMessage);
     } catch (error) {
         console.log(`Error updating DolphinTuner: ${error.message}`);
         console.log(`Error stack:`, error.stack);
         return output.reply(
-            `⚠️ Failed to update DolphinTuner: ${error.message}\n` +
-            `Ping: ${Date.now() - timeA}ms`
+            `⚠️ Failed to update DolphinTuner: ${error.message}`
         );
     }
 }
@@ -233,10 +249,9 @@ async function handleUpdate(ctx, output, timeA) {
  * Handle the commit history command
  * @param {Object} ctx - Context object
  * @param {Object} output - Output object for replying
- * @param {number} timeA - Start time for ping calculation
  * @returns {Promise<void>}
  */
-async function handleCommitHistory(ctx, output, timeA) {
+async function handleCommitHistory(ctx, output) {
     try {
         const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
         const repoName = "dolphintools"; // Replace with your repository name
@@ -269,15 +284,13 @@ async function handleCommitHistory(ctx, output, timeA) {
             .join("\n\n");
 
         return output.reply(
-            `📜 DolphinTuner Commit History (Latest 5 commits as of ${new Date().toLocaleString()}):\n\n${commitHistory}\n` +
-            `Ping: ${Date.now() - timeA}ms`
+            `📜 DolphinTuner Commit History (Latest 5 commits as of ${new Date().toLocaleString()}):\n\n${commitHistory}`
         );
     } catch (error) {
         console.log(`Error fetching commit history: ${error.message}`);
         console.log(`Error stack:`, error.stack);
         return output.reply(
-            `⚠️ Failed to fetch commit history: ${error.message}\n` +
-            `Ping: ${Date.now() - timeA}ms`
+            `⚠️ Failed to fetch commit history: ${error.message}`
         );
     }
 }
@@ -291,15 +304,71 @@ function getSimulatorCommands(target, defaultSimulatorCommands) {
     return target && target.toLowerCase() !== "all" ? [target] : defaultSimulatorCommands;
 }
 
+/**
+ * Helper function to find the closest matching simulator name
+ * @param {string} input - User input to match
+ * @param {string[]} simulators - Array of valid simulator names
+ * @returns {string|null} Closest match or null if no close match
+ */
+function findClosestMatch(input, simulators) {
+    if (!input || typeof input !== 'string') return null;
+    input = input.toLowerCase().trim();
+    let closestMatch = null;
+    let minDistance = Infinity;
+
+    for (const simulator of simulators) {
+        const distance = levenshteinDistance(input, simulator.toLowerCase());
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestMatch = simulator;
+        }
+    }
+
+    // Consider a match "close" if the Levenshtein distance is <= 2 (configurable threshold)
+    return minDistance <= 2 ? closestMatch : null;
+}
+
+/**
+ * Helper function to calculate Levenshtein distance between two strings
+ * @param {string} a - First string
+ * @param {string} b - Second string
+ * @returns {number} Levenshtein distance
+ */
+function levenshteinDistance(a, b) {
+    const matrix = Array(b.length + 1).fill(null)
+        .map(() => Array(a.length + 1).fill(null));
+
+    for (let i = 0; i <= b.length; i++) matrix[i][0] = i;
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1, // Deletion
+                matrix[i][j - 1] + 1, // Insertion
+                matrix[i - 1][j - 1] + cost // Substitution
+            );
+        }
+    }
+
+    return matrix[b.length][a.length];
+}
+
 export async function entry(ctx) {
-    const timeA = Date.now();
-    const { input, output, GameSimulator, args, money, commands, prefix, commandName } = ctx;
-    const userData = await money.get(input.senderID);
-    const tuneCost = 0; // As specified, cost is 0
+    const { input, output, GameSimulator, args, money, commands, prefix, commandName, isTimeAvailable } = ctx;
 
-    // Define the list of default simulator commands
-    const defaultSimulatorCommands = ["beekeep", "plantita"]; // Default list for tuning actions
+    // Time availability check (5:30 PM to 6:00 PM)
+    const a = (17 * 60 + 30) * 60 * 1000; // 5:30 PM in milliseconds
+    const b = 18 * 60 * 60 * 1000; // 6:00 PM in milliseconds
+    let isAvailable = isTimeAvailable(a, b);
 
+    if (!isAvailable) {
+        return output.reply(`✦ ${
+            closeTexts[Math.floor(Math.random() * closeTexts.length)]
+        }\n\n**Try again later!**`);
+    }
+    
     const home = new ReduxCMDHome(
         {
             isHypen: true, // Enable hyphen-based subcommands (e.g., -tune, -list)
@@ -311,78 +380,133 @@ export async function entry(ctx) {
                 aliases: ["-tune"], // Add hyphen alias for consistency
                 args: ["<all | simulator>"], // Expect <all | simulator> as an argument
                 async handler() {
-                    const target = args[0] || "all"; // Get the target from args (default to "all")
-                    const simulatorCommands = getSimulatorCommands(target, defaultSimulatorCommands);
-
-                    const simulatorData = await initializeSimulators(ctx, simulatorCommands);
-                    const rareItems = Object.entries(simulatorData)
-                        .flatMap(([key, sim]) => {
-                            const hasHigherRarity = sim.itemData.some(item => item.chance <= 0.15);
-                            if (hasHigherRarity) {
-                                return sim.itemData
-                                    .filter(item => item.chance <= 0.15)
-                                    .map(item => ({ simKey: key, item }));
-                            } else {
-                                return sim.itemData
-                                    .sort((a, b) => a.chance - b.chance)
-                                    .slice(0, 3)
-                                    .map(item => ({ simKey: key, item }));
-                            }
-                        })
-                        .filter(item => item);
-
-                    const { battlePoints = 0 } = userData || {};
-                    if (battlePoints < tuneCost) {
-                        return output.reply(
-                            `❌ Insufficient funds! You have **💷${battlePoints.toLocaleString()}**, need **💷${tuneCost.toLocaleString()}**`
-                        );
+    if (!ctx.input.isAdmin) {
+      if (args[0]?.toLowerCase() === "all") {
+            return output.reply('❌ Only admins can use the "all" command!');
+        }
                     }
 
-                    if (!rareItems.length) {
-                        return output.reply(`⚠️ No rare items found in ${target === "all" ? "specified simulators" : `simulator ${target}`}!`);
-                    }
+    const target = args[0] || "all"; // Get the target from args (default to "all")
+    
+    // Check if target is valid or find closest match
+    if (target.toLowerCase() !== "all") {
+        const normalizedTarget = target.toLowerCase();
+        const isValidSimulator = defaultSimulatorCommands.includes(normalizedTarget);
+        if (!isValidSimulator) {
+            const closestMatch = findClosestMatch(normalizedTarget, defaultSimulatorCommands);
+            if (closestMatch) {
+                return output.reply(
+                    `⚠️ Game simulator "${target}" not found!\n` +
+                    `Did you mean "${closestMatch.charAt(0).toUpperCase() + closestMatch.slice(1).toLowerCase()}"?`
+                );
+            } else {
+                return output.reply(
+                    `⚠️ Game simulator "${target}" not found!`
+                );
+            }
+        }
+    }
 
-                    const itemsBySimulator = {};
-                    rareItems.forEach(({ simKey, item }) => {
-                        if (!itemsBySimulator[simKey]) itemsBySimulator[simKey] = [];
-                        itemsBySimulator[simKey].push(item);
-                    });
+    const simulatorCommands = getSimulatorCommands(target, defaultSimulatorCommands);
 
-                    const updateData = { battlePoints: battlePoints - tuneCost };
-                    let totalTunedItems = 0;
+    const simulatorData = await initializeSimulators(ctx, simulatorCommands);
+    const rareItems = Object.entries(simulatorData)
+        .flatMap(([key, sim]) => {
+            const hasHigherRarity = sim.itemData.some(item => item.chance > 0);
+            if (hasHigherRarity) {
+                return sim.itemData
+                    .filter(item => item.chance >= 0 && item.chance <= 1)
+                    .sort((a, b) => a.chance - b.chance)
+                    .slice(0, 3)
+                    .map(item => ({ simKey: key, item }));
+            } else {
+                return sim.itemData
+                    .sort((a, b) => a.chance - b.chance)
+                    .slice(0, 3)
+                    .map(item => ({ simKey: key, item }));
+            }
+        })
+        .filter(item => item);
 
-                    for (const [simKey, items] of Object.entries(itemsBySimulator)) {
-                        const sortedItems = items.sort((a, b) => a.chance - b.chance);
-                        const itemsToTune = sortedItems.slice(0, Math.min(3, sortedItems.length));
+    const { battlePoints = 0 } = userData || {};
+    if (battlePoints < tuneCost) {
+        return output.reply(
+            `❌ Insufficient funds! You have **💷${battlePoints.toLocaleString()}**, need **💷${tuneCost.toLocaleString()}**`
+        );
+    }
 
-                        if (itemsToTune.length > 0) {
-                            updateData[simKey + "Tune"] = itemsToTune.map(item => item.name);
-                            updateData[simKey + "Stamp"] = Date.now();
-                            totalTunedItems += itemsToTune.length;
-                        }
-                    }
+    if (!rareItems.length) {
+        return output.reply(`⚠️ No rare items found in ${target === "all" ? "specified simulators" : `simulator ${target}`}!`);
+    }
 
-                    if (totalTunedItems === 0) {
-                        return output.reply(`⚠️ No rare items available to tune automatically in ${target === "all" ? "specified simulators" : `simulator ${target}`}!`);
-                    }
+    const itemsBySimulator = {};
+    rareItems.forEach(({ simKey, item }) => {
+        if (!itemsBySimulator[simKey]) itemsBySimulator[simKey] = [];
+        itemsBySimulator[simKey].push(item);
+    });
 
-                    await money.set(input.senderID, updateData);
+    const updateData = { battlePoints: battlePoints - tuneCost };
+    let totalTunedItems = 0;
 
-                    const tunedList = Object.entries(itemsBySimulator).flatMap(([simKey, items]) => {
-                        const sortedItems = items.sort((a, b) => a.chance - b.chance);
-                        const itemsToTune = sortedItems.slice(0, Math.min(3, sortedItems.length));
-                        return itemsToTune.map((item, index) => {
-                            return `➜ ${index + 1}. ${item.icon} **${item.name}**`;
-                        });
-                    }).join("\n");
+    for (const [simKey, items] of Object.entries(itemsBySimulator)) {
+        const sortedItems = items.sort((a, b) => a.chance - b.chance);
+        const itemsToTune = sortedItems.slice(0, Math.min(3, sortedItems.length));
 
-                    return output.reply(
-                        `✔ Automatically tuned ${totalTunedItems} rare items in ${target === "all" ? "specified simulators" : `simulator ${target}`}!\n` +
-                        `Cost: 💷${tuneCost.toLocaleString()}\n\n` +
-                        `${tunedList}\n` +
-                        `Ping: ${Date.now() - timeA}ms`
-                    );
-                }
+        if (itemsToTune.length > 0) {
+            updateData[simKey + "Tune"] = itemsToTune.map(item => item.name);
+            updateData[simKey + "Stamp"] = Date.now();
+            totalTunedItems += itemsToTune.length;
+        }
+    }
+
+    if (totalTunedItems === 0) {
+        return output.reply(`⚠️ No rare items available to tune automatically in ${target === "all" ? "specified simulators" : `simulator ${target}`}!`);
+    }
+
+    const isAlreadyTuned = simulatorCommands.some(simKey => {
+        const tuneKey = simKey + "Tune";
+        return userData[tuneKey] && userData[tuneKey].length > 0;
+    });
+    let i;
+    if (isAlreadyTuned) {
+        const message = `You already tuned this Game, to proceed try to react 👍 in this message`;
+        const z = await output.quickWaitReact(message, {
+            authorOnly: true,
+            emoji: "👍",
+        });
+        i = z.self;
+        if (!z.self) {
+            return output.edit(`❌ Action cancelled. No 👍 reaction received from the author.`, i.messageID);
+        }
+    }
+    await money.set(input.senderID, updateData);
+
+    const tunedOutput = Object.entries(itemsBySimulator).map(([simKey, items]) => {
+        const sortedItems = items.sort((a, b) => a.chance - b.chance);
+        const itemsToTune = sortedItems.slice(0, Math.min(3, sortedItems.length));
+        const itemList = itemsToTune.map((item, index) => 
+            `\n➜ ${index + 1}. ${item.icon} **${item.name}**`
+        ).join("");
+        return `${simKey.charAt(0).toUpperCase() + simKey.slice(1).toLowerCase()}:${itemList}`;
+    }).join("\n\n");
+
+    if (i) {
+        await output.edit(`🔃 | Proceeding with tuning...`, i.messageID);
+        setTimeout(async () => {
+            return await output.edit(
+                `✔ Automatically tune ${totalTunedItems} rare items in ${target === "all" ? "specified simulators" : `simulator ${target}`}!\n` +
+                `Cost: 💷${tuneCost.toLocaleString()}\n\n` +
+                `${tunedOutput}`, i.messageID
+            );
+        }, 2000);
+    } else {
+        return output.reply(
+            `✔ Automatically tune ${totalTunedItems} rare items in ${target === "all" ? "specified simulators" : `simulator ${target}`}!\n` +
+            `Cost: 💷${tuneCost.toLocaleString()}\n\n` +
+            `${tunedOutput}`
+        );
+    }
+}
             },
             {
                 key: "list",
@@ -408,16 +532,18 @@ export async function entry(ctx) {
                         return output.reply(`⚠️ No rare items found in ${target === "all" ? "specified simulators" : `simulator ${target}`}!`);
                     }
 
-                    const itemList = Object.entries(simulatorData).flatMap(([simKey, sim]) => {
+                    // Format the response for each simulator with the new line style
+                    const itemList = Object.entries(simulatorData).map(([simKey, sim]) => {
                         const hasHigherRarity = sim.itemData.some(item => item.chance <= 0.15);
                         const sortedItems = hasHigherRarity
                             ? sim.itemData.filter(item => item.chance <= 0.15).sort((a, b) => a.chance - b.chance)
                             : sim.itemData.sort((a, b) => a.chance - b.chance).slice(0, 3);
-                        return sortedItems.map((item, index) => 
-                            `➜ ${index + 1}. ${item.icon} **${item.name}** (From: ${simKey})\n` +
+                        const itemsOutput = sortedItems.map((item, index) => 
+                            `\n➜ ${index + 1}. ${item.icon} **${item.name}**\n` +
                             `Rarity: ${Math.round(100 - item.chance * 100)}%`
-                        );
-                    }).join("\n");
+                        ).join("");
+                        return `${simKey.charAt(0).toUpperCase() + simKey.slice(1).toLowerCase()}:${itemsOutput}`;
+                    }).join("\n\n");
 
                     return output.reply(
                         `📜 Rare Items Available (${rareItems.length}) in ${target === "all" ? "specified simulators" : `simulator ${target}`} (Largest to Smallest Rarity):\n\n${itemList}\n\n` +
@@ -454,8 +580,7 @@ export async function entry(ctx) {
                     await money.set(input.senderID, { ...userData, ...updateData });
 
                     return output.reply(
-                        `✔ Reset ${totalResetItems} tuned items in ${target === "all" ? "specified simulators" : `simulator ${target}`}!\n` +
-                        `Ping: ${Date.now() - timeA}ms`
+                        `✔ Reset ${totalResetItems} tuned items in ${target === "all" ? "specified simulators" : `simulator ${target}`}!`
                     );
                 }
             },
@@ -467,8 +592,7 @@ export async function entry(ctx) {
                     // Check if user is a bot admin (permissions level 1 or higher)
                     if (!ctx.input.isAdmin) {
                         return output.reply(
-                            `⚠️ Only bot admins can use +${ctx.prefix}${ctx.commandName}-update!\n` +
-                            `Ping: ${Date.now() - timeA}ms`
+                            `⚠️ Only bot admins can use ${ctx.prefix}${ctx.commandName}-update!`
                         );
                     }
 
@@ -524,8 +648,7 @@ export async function entry(ctx) {
                                 `Message: ${latestCommit.commit.message}\n` +
                                 `Author: ${latestCommit.commit.author.name}\n` +
                                 `Date: ${new Date(latestCommit.commit.author.date).toLocaleString()}\n` +
-                                `View Commit: ${latestCommit.html_url}\n` +
-                                `Ping: ${Date.now() - timeA}ms`
+                                `View Commit: ${latestCommit.html_url}`
                             );
                         }
 
@@ -533,16 +656,14 @@ export async function entry(ctx) {
                                             `Message: ${latestCommit.commit.message}\n` +
                                             `Author: ${latestCommit.commit.author.name}\n` +
                                             `Date: ${new Date(latestCommit.commit.author.date).toLocaleString()}\n` +
-                                            `View Commit: ${latestCommit.html_url}\n` +
-                                            `Ping: ${Date.now() - timeA}ms`;
+                                            `View Commit: ${latestCommit.html_url}`;
 
                         return output.reply(updateMessage);
                     } catch (error) {
                         console.log(`Error updating DolphinTuner: ${error.message}`);
                         console.log(`Error stack:`, error.stack);
                         return output.reply(
-                            `⚠️ Failed to update DolphinTuner: ${error.message}\n` +
-                            `Ping: ${Date.now() - timeA}ms`
+                            `⚠️ Failed to update DolphinTuner: ${error.message}`
                         );
                     }
                 }
@@ -584,15 +705,13 @@ export async function entry(ctx) {
                             .join("\n\n");
 
                         return output.reply(
-                            `📜 DolphinTuner Commit History (Latest 5 commits as of ${new Date().toLocaleString()}):\n\n${commitHistory}\n` +
-                            `Ping: ${Date.now() - timeA}ms`
+                            `📜 DolphinTuner Commit History (Latest 5 commits as of ${new Date().toLocaleString()}):\n\n${commitHistory}`
                         );
                     } catch (error) {
                         console.log(`Error fetching commit history: ${error.message}`);
                         console.log(`Error stack:`, error.stack);
                         return output.reply(
-                            `⚠️ Failed to fetch commit history: ${error.message}\n` +
-                            `Ping: ${Date.now() - timeA}ms`
+                            `⚠️ Failed to fetch commit history: ${error.message}`
                         );
                     }
                 }
