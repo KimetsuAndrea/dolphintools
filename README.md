@@ -48,23 +48,23 @@ The project emphasizes:
 
 ### Steps
 1. **Clone the Repository** (if applicable):
-   \`\`\`bash
+   ```bash
    git clone https://github.com/KimetsuAndrea/dolphintools.git
    cd dolphintools
-   \`\`\`
+   ```
    *Note:* If the repo is private, use your GitHub credentials or token.
 
 2. **Install Dependencies**:
    Ensure \`axios\` and file system modules are available:
-   \`\`\`bash
+   ```bash
    npm install axios
-   \`\`\`
+   ```
 
 3. **Place \`dolphinmenu.js\`**:
    Move \`dolphinmenu.js\` to your bot’s command directory (e.g., outside \`CommandFiles/commands/\` initially):
-   \`\`\`bash
+   ```bash
    cp dolphinmenu.js /path/to/cassidy-bot/commands/
-   \`\`\`
+   ```
 
 4. **Configure Cassidy Bot**:
    - Ensure the bot loads commands from \`CommandFiles/commands/\`.
@@ -72,9 +72,9 @@ The project emphasizes:
 
 5. **Set Environment Variables** (optional):
    Create a \`.env\` file or set the GitHub token:
-   \`\`\`bash
+   ```bash
    GITHUB_TOKEN=your_personal_access_token
-   \`\`\`
+   ```
 
 6. **Run the Bot**:
    Start Cassidy Bot as usual. Dolphin Tools will be available via the \`+dolphinmenu\` command.
@@ -131,7 +131,7 @@ We welcome contributions to Dolphin Tools! To get started:
    - Ensure code follows the dolphin theme (\`🐬\`) and Cassidy Bot conventions.
 
 4. **Contact**:
-   Reach out to the maintainers (e.g., Liane, Nica, Symer) via Cassidy Bot’s community if needed.
+   Reach out to the maintainers (e.g., **Liane Cagara**, **Symer [ MrkimstersDev ]**, **Delfin**, ) via Cassidy Bot’s community if needed.
 
 ---
 
