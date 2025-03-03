@@ -15,16 +15,16 @@ export class style {
   };
 }
 export const meta = {
-    name: "dolphinmenu",
+    name: "test",
     description: "Manages Dolphin commands: install, update, list, search, and get info on commands.",
-    author: "MrkimstersDev || 0xVoid",
+    author: "0xVoid",
     version: "1.0.0",
     usage: "{prefix}dolphinmenu <option> [file | keyword]",
     category: "Utilities",
     permissions: [2], // Admin-only access
     noPrefix: false,
     waitingTime: 1,
-    otherNames: ["dolphinmenu", "dmenu"],
+    otherNames: ["titi"],
     requirement: "2.5.0",
     icon: "🐬",
     shopPrice: 0,
