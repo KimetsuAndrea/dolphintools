@@ -3,11 +3,21 @@ import { writeFile, mkdir } from 'fs/promises'; // For file operations
 import { existsSync } from 'fs'; // To check directory existence
 import { join } from 'path'; // For path handling
 import { ReduxCMDHome } from "../modules/reduxCMDHome.js"; // Adjust path as needed
-
+export class style {
+  title = {
+    text_font: "bold",
+    content: "DolphinMenu 🐬",
+    line_bottom: "default",
+  };
+  content = {
+    text_font: "none",
+    content: null,
+  };
+}
 export const meta = {
     name: "dolphinmenu",
     description: "Manages Dolphin commands: install, update, list, search, and get info on commands.",
-    author: "MrkimstersDev",
+    author: "MrkimstersDev || 0xVoid",
     version: "1.0.0",
     usage: "{prefix}dolphinmenu <option> [file | keyword]",
     category: "Utilities",
@@ -20,17 +30,11 @@ export const meta = {
     shopPrice: 0,
 };
 
-export const style = {
-  title: "Dolphin Menu 🐬",
-  contentFont: "fancy",
-  titleFont: "bold",
-};
-
 // GitHub repository details
-const repoOwner = "KimetsuAndrea"; // Replace with your GitHub username
-const repoName = "dolphintools"; // Replace with your repository name
-const commandDir = "CommandFiles/commands/"; // Local target directory
-const repoCommandPath = ""; // Main directory of the repo (no subfolder)
+const repoOwner = "KimetsuAndrea";
+const repoName = "dolphintools";
+const commandDir = "CommandFiles/commands/";
+const repoCommandPath = "";
 
 // Helper function to ensure directory exists
 async function ensureDirectory(dirPath) {
@@ -40,18 +44,24 @@ async function ensureDirectory(dirPath) {
     }
 }
 
-// Helper function to fetch and save a command file from GitHub
-async function fetchAndSaveCommand(fileName, githubApi, action = "install") {
+// Helper function to fetch, save, and load a command file from GitHub
+async function fetchSaveAndLoadCommand(fileName, githubApi, commands, action = "install") {
     try {
-        const repoFilePath = join(repoCommandPath, fileName); // Root-level file in repo
-        const localFilePath = join(commandDir, fileName); // Local CommandFiles/commands/
+        const repoFilePath = join(repoCommandPath, fileName);
+        const localFilePath = join(commandDir, fileName);
         const response = await githubApi.get(`/repos/${repoOwner}/${repoName}/contents/${repoFilePath}`);
         const fileContent = Buffer.from(response.data.content, "base64").toString("utf8");
-
-        // **Fixed: Use `commandDir` instead of `dirPath`**
+        
         await ensureDirectory(commandDir);
         await writeFile(localFilePath, fileContent, "utf8");
-        console.log(`Successfully ${action}ed ${fileName} to ${localFilePath}`);
+        
+        // Use global.Cassidy.loadCommand to load the command
+        const loadError = await global.Cassidy.loadCommand(fileName, commands, false, true);
+        if (loadError) {
+            throw loadError;
+        }
+        
+        console.log(`Successfully ${action}ed and loaded ${fileName} to ${localFilePath}`);
         return { success: true, sha: response.data.sha };
     } catch (error) {
         console.error(`Error ${action}ing ${fileName}: ${error.message}`);
@@ -61,10 +71,10 @@ async function fetchAndSaveCommand(fileName, githubApi, action = "install") {
 
 // Main entry function using ReduxCMDHome
 export async function entry(ctx) {
-    const { input, output, prefix, args } = ctx;
+    const { input, output, prefix, args, commands } = ctx;
 
-    // Configure GitHub API (shared across subcommands)
-    const githubToken = process.env.GITHUB_TOKEN; // Optional, for private repos or rate limits
+    // Configure GitHub API
+    const githubToken = process.env.GITHUB_TOKEN;
     const githubApi = axios.create({
         baseURL: "https://api.github.com",
         headers: {
@@ -75,12 +85,12 @@ export async function entry(ctx) {
 
     const home = new ReduxCMDHome(
         {
-            isHypen: true, // Enable hyphen-based subcommands (e.g., -install)
+            isHypen: true,
         },
         [
             {
                 key: "install",
-                description: "Installs a specific Dolphin command file (Admin-only)",
+                description: "Installs and loads a specific Dolphin command file (Admin-only)",
                 aliases: ["-install"],
                 args: ["<file>"],
                 async handler() {
@@ -95,17 +105,17 @@ export async function entry(ctx) {
                         return output.reply(`⚠️ File must be a .js file (e.g., dolphinTuner.js)`);
                     }
 
-                    const result = await fetchAndSaveCommand(fileName, githubApi, "install");
+                    const result = await fetchSaveAndLoadCommand(fileName, githubApi, commands, "install");
                     if (result.success) {
-                        return output.reply(`✔ Successfully installed ${fileName} to ${commandDir}`);
+                        return output.reply(`✔ Successfully installed and loaded ${fileName} to ${commandDir}`);
                     } else {
-                        return output.reply(`⚠️ Failed to install ${fileName}: ${result.error}`);
+                        return output.reply(`⚠️ Failed to install/load ${fileName}: ${result.error}`);
                     }
                 }
             },
             {
                 key: "update",
-                description: "Updates a specific Dolphin command file to the latest version (Admin-only)",
+                description: "Updates and reloads a specific Dolphin command file (Admin-only)",
                 aliases: ["-update"],
                 args: ["<file>"],
                 async handler() {
@@ -120,14 +130,14 @@ export async function entry(ctx) {
                         return output.reply(`⚠️ File must be a .js file (e.g., dolphinTuner.js)`);
                     }
 
-                    const result = await fetchAndSaveCommand(fileName, githubApi, "update");
+                    const result = await fetchSaveAndLoadCommand(fileName, githubApi, commands, "update");
                     if (result.success) {
                         return output.reply(
-                            `✔ Updated ${fileName} to latest version (SHA: ${result.sha.substring(0, 7)})\n` +
+                            `✔ Updated and reloaded ${fileName} to latest version (SHA: ${result.sha.substring(0, 7)})\n` +
                             `File saved to ${commandDir}`
                         );
                     } else {
-                        return output.reply(`⚠️ Failed to update ${fileName}: ${result.error}`);
+                        return output.reply(`⚠️ Failed to update/load ${fileName}: ${result.error}`);
                     }
                 }
             },
@@ -208,13 +218,12 @@ export async function entry(ctx) {
                         const response = await githubApi.get(`/repos/${repoOwner}/${repoName}/contents/${repoFilePath}`);
                         const fileContent = Buffer.from(response.data.content, "base64").toString("utf8");
 
-                        // Extract meta object using a simple regex (assumes export const meta = {...})
                         const metaMatch = fileContent.match(/export const meta = {([\s\S]*?)};/);
                         if (!metaMatch) {
                             return output.reply(`⚠️ No metadata found in ${fileName}`);
                         }
                         const metaStr = `{${metaMatch[1]}}`;
-                        const meta = eval(`(${metaStr})`); // Safely parse meta object (eval used for simplicity; consider safer parsing in production)
+                        const meta = eval(`(${metaStr})`);
 
                         return output.reply(
                             `📋 **Command Info: ${fileName}**\n` +
@@ -232,4 +241,4 @@ export async function entry(ctx) {
     );
 
     home.runInContext(ctx);
-                    }
+}
