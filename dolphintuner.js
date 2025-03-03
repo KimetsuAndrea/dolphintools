@@ -40,6 +40,8 @@ const closeTexts = [
     "The dolphins are practicing their flips—see you when the show’s ready! Opens Only 5:30pm to 6pm!"
 ];
 
+const defaultSimulatorCommands = ["plantita", "resto", "harvest", "beekeep", "chop", "cook", "garden", "brew", "farm", "minecraft", "trawl", "dig", "treasure", "explorer", "deepseadiver", "wizardsforge"];
+
 /**
  * Helper function to format duration
  * @param {number} ms - Milliseconds
